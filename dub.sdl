@@ -1,0 +1,12 @@
+name "chod"
+description "Alternative Chocolatey client"
+authors "dd86k"
+copyright "Copyright © 2021, dd86k"
+license "BSD 3-Clause"
+dependency "vibe-d:http" version="~>0.9.3"
+dependency "dxml" version="~>0.4.3"
+versions "VibeDisableCommandLineParsing"
+
+buildType "debug-api" {
+	debugVersions "API"
+}
