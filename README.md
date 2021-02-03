@@ -6,9 +6,9 @@ This is not meant as a drop-in replacement of the choco client.
 
 Implemented commands:
 - search
+- show
 
 Todo:
-- show
 - install
 - upgrade
 
