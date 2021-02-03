@@ -93,6 +93,34 @@ int main(string[] args)
 			return 1;
 		}
 		return search(args[2]);
+	case "info":
+		try
+		{
+			r = args.getopt(
+				config.caseSensitive,
+				config.noPassThrough,
+				"placeholder", "does nothing", &placeholder
+			);
+		}
+		catch (Exception ex)
+		{
+			logError(ex.msg);
+			return 1;
+		}
+		
+		if (helpWanted)
+		{
+			writeln("Info options:");
+			printOptions(r.options);
+			return 0;
+		}
+		
+		if (args.length < 3) // chod info xxx
+		{
+			logError("Missing search argument");
+			return 1;
+		}
+		return info(args[2]);
 	case "version", "--version":
 		enum S = "chod "~CHOD_VERSION~" (built: "~__TIMESTAMP__~")";
 		writeln(S);

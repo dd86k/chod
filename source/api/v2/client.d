@@ -49,17 +49,29 @@ void apiMetadata(string url)
 int apiSearch(ref Package[] pkgs, string url, string name)
 {
 	url = apiPrepUrl(url);
-	url ~= format("Search()?"~
+	url ~= "Search()?"~
 		"$filter=IsLatestVersion&"~
 		"$skip=0&"~
 		"$top=30&"~
-		"searchTerm='%s'&"~
+		"searchTerm='"~name~"'&"~
 		"targetFramework=''&"~
-		"includePrerelease=false", name);
+		"includePrerelease=false";
 	
 	string xml;
+	if (httpGet(xml, url))
+		return 1;
 	
-	if (httpGet(xml, url, false))
+	return parsePackages(pkgs, xml);
+}
+
+int apiInfo(ref Package[] pkgs, string url, string name)
+{
+	url = apiPrepUrl(url);
+	url ~= "Packages()?"~
+		"$filter=(tolower(Id)%20eq%20'"~name~"')%20and%20IsLatestVersion";
+	
+	string xml;
+	if (httpGet(xml, url))
 		return 1;
 	
 	return parsePackages(pkgs, xml);

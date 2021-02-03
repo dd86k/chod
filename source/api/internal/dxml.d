@@ -1,8 +1,114 @@
 module api.internal.dxml;
 
-import logging;
+import utils, logging;
 import api.common;
 import dxml.dom;
+
+private
+void parseProperties(ref Package pkg, DOMEntity!string entry)
+{
+	foreach (prop; entry.children)
+	{
+		if (prop.type != EntityType.elementStart)
+			continue;
+		
+		if (prop.children.length < 1)
+			continue;
+		
+		with (pkg.properties)
+		switch (prop.name)
+		{
+		case "d:Version":
+			version_ = prop.children[0].text;
+			continue;
+		case "d:Title":
+			title = prop.children[0].text;
+			continue;
+		case "d:Description":
+			description = prop.children[0].text;
+			continue;
+		case "d:Tags":
+			tags = prop.children[0].text;
+			continue;
+		case "d:Copyright":
+			copyright = prop.children[0].text;
+			continue;
+		case "d:Created":
+			tryParse(created, prop.children[0].text);
+			continue;
+		case "d:DownloadCount":
+			tryParse(downloadCount, prop.children[0].text);
+			continue;
+		case "d:VersionDownloadCount":
+			tryParse(versionDownloadCount, prop.children[0].text);
+			continue;
+		case "d:GalleryDetailsUrl":
+			galleryDetailsUrl = prop.children[0].text;
+			continue;
+		case "d:IsLatestVersion":
+			tryParse(isLatestVersion, prop.children[0].text);
+			continue;
+		case "d:IsAbsoluteLatestVersion":
+			tryParse(isAbsoluteLatestVersion, prop.children[0].text);
+			continue;
+		case "d:PackageHash":
+			hash = prop.children[0].text;
+			continue;
+		case "d:PackageHashAlgorithm":
+			hashAlgo = prop.children[0].text;
+			continue;
+		case "d:PackageSize":
+			tryParse(packageSize, prop.children[0].text);
+			continue;
+		case "d:ProjectUrl":
+			projectUrl = prop.children[0].text;
+			continue;
+		default: continue;
+		}
+	}
+}
+
+private
+void parseEntry(ref Package pkg, DOMEntity!string c)
+{
+	foreach (entry_index, entry; c.children)
+	{
+		if (entry.type != EntityType.elementStart)
+			continue;
+		
+		if (entry.children.length < 1)
+			continue;
+		
+		with (pkg)
+		switch (entry.name)
+		{
+		case "id":
+			id = entry.children[0].text;
+			continue;
+		case "title":
+			title = entry.children[0].text;
+			continue;
+		case "summary":
+			summary = entry.children[0].text;
+			continue;
+		case "updated":
+			tryParse(updated, entry.children[0].text);
+			continue;
+		case "author":
+			foreach (name; entry.children)
+			{
+				if (name.children.length == 0)
+					continue;
+				authors ~= name.children[0].text;
+			}
+			continue;
+		case "m:properties":
+			parseProperties(pkg, entry);
+			continue;
+		default: continue;
+		}
+	}
+}
 
 int parsePackages(ref Package[] pkgs, string xml)
 {
@@ -39,7 +145,7 @@ int parsePackages(ref Package[] pkgs, string xml)
 		auto feed = dom.children[child_index];
 		
 		// find every <entry>
-		foreach (i, c; feed.children)
+		foreach (c; feed.children)
 		{
 			if (c.type != EntityType.elementStart)
 				continue;
@@ -47,31 +153,8 @@ int parsePackages(ref Package[] pkgs, string xml)
 			if (c.name != "entry")
 				continue;
 			
-			// <entry>
 			Package pkg;
-			foreach (entry_index, entry; c.children)
-			{
-				if (entry.type != EntityType.elementStart)
-					continue;
-				
-				if (entry.children.length < 1)
-					continue;
-				
-				switch (entry.name)
-				{
-				case "id":
-					pkg.id = entry.children[0].text;
-					break;
-				case "title":
-					pkg.name = entry.children[0].text;
-					break;
-				case "summary":
-					pkg.description = entry.children[0].text;
-					break;
-				default: continue;
-				}
-			}
-			
+			parseEntry(pkg, c); // parse <entry>
 			pkgs ~= pkg; // add to list
 		}
 		
@@ -79,9 +162,8 @@ int parsePackages(ref Package[] pkgs, string xml)
 	}
 	catch (Exception ex)
 	{
-		import std.stdio;
-		debug logFatal("parser: %s", ex);
-		else  logFatal("parser: %s", ex.msg);
+		debug logError("parser: %s", ex);
+		else  logError("parser: %s", ex.msg);
 		return 3;
 	}
 }

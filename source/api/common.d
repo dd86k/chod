@@ -4,7 +4,7 @@ import std.datetime;
 
 /// 
 // Basically, .NET data types
-enum MetaType
+/*enum MetaType
 {
 	EdmString,
 	EdmDateTime,
@@ -66,7 +66,7 @@ enum MetaName
 	DownloadCache	= "DownloadCache",
 	PackageScanStatus	= "PackageScanStatus",
 	PackageScanResultDate	= "PackageScanResultDate",
-}
+}*/
 
 //-/ Represents a field of data for a package
 /*struct PackageMeta
@@ -86,8 +86,36 @@ enum MetaName
 /// 
 struct Package
 {
+	/// Package id (URL)
 	string id;
-	string name;
-	string description;
-	DateTime published;
+	/// Full title (e.g., Example.Portable)
+	string title;
+	/// Short descriptive summary
+	string summary;
+	/// Package last updated
+	DateTime updated;
+	/// Author names
+	string[] authors;
+	
+	/// Represents <m:properties>
+	struct Properties
+	{
+		string version_;
+		string title;
+		string description;
+		string tags;
+		string copyright;
+		DateTime created;
+		int downloadCount;
+		int versionDownloadCount;
+		string galleryDetailsUrl;
+		DateTime published;
+		bool isLatestVersion;
+		bool isAbsoluteLatestVersion;
+		string hashAlgo;
+		string hash;
+		long packageSize;
+		string projectUrl;
+	}
+	Properties properties;
 }
