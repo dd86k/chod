@@ -1,7 +1,8 @@
 module api.internal.dxml;
 
+import std.stdio;
 import utils, logging;
-import api.common;
+import common;
 import dxml.dom;
 
 private
@@ -35,6 +36,9 @@ void parseProperties(ref Package pkg, DOMEntity!string entry)
 			continue;
 		case "d:Created":
 			tryParse(created, prop.children[0].text);
+			continue;
+		case "d:Published":
+			tryParse(published, prop.children[0].text);
 			continue;
 		case "d:DownloadCount":
 			tryParse(downloadCount, prop.children[0].text);
@@ -71,30 +75,34 @@ void parseProperties(ref Package pkg, DOMEntity!string entry)
 private
 void parseEntry(ref Package pkg, DOMEntity!string c)
 {
-	foreach (entry_index, entry; c.children)
+	foreach (entry; c.children)
 	{
+			
 		if (entry.type != EntityType.elementStart)
 			continue;
 		
-		if (entry.children.length < 1)
-			continue;
+		size_t nchilds = entry.children.length;
 		
 		with (pkg)
 		switch (entry.name)
 		{
 		case "id":
-			id = entry.children[0].text;
+			if (nchilds)
+				id = entry.children[0].text;
 			continue;
 		case "title":
-			title = entry.children[0].text;
+			if (nchilds)
+				title = entry.children[0].text;
 			continue;
 		case "summary":
-			summary = entry.children[0].text;
+			if (nchilds)
+				summary = entry.children[0].text;
 			continue;
 		case "updated":
 			tryParse(updated, entry.children[0].text);
 			continue;
 		case "author":
+			if (nchilds)
 			foreach (name; entry.children)
 			{
 				if (name.children.length == 0)
@@ -102,8 +110,24 @@ void parseEntry(ref Package pkg, DOMEntity!string c)
 				authors ~= name.children[0].text;
 			}
 			continue;
+		case "content":
+			foreach (attribute; entry.attributes)
+			{
+				switch (attribute.name)
+				{
+				case "type":
+					packageMime = attribute.value;
+					continue;
+				case "src":
+					packageUrl = attribute.value;
+					continue;
+				default:
+				}
+			}
+			continue;
 		case "m:properties":
-			parseProperties(pkg, entry);
+			if (nchilds)
+				parseProperties(pkg, entry);
 			continue;
 		default: continue;
 		}

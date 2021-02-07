@@ -1,7 +1,7 @@
 module api.v2.client;
 
 import std.string, std.format, std.typetuple;
-import api.common;
+import common;
 import api.internal.dxml;
 import api.internal.vibed;
 
@@ -75,4 +75,12 @@ int apiInfo(ref Package[] pkgs, string url, string name)
 		return 1;
 	
 	return parsePackages(pkgs, xml);
+}
+
+int apiDownload(string path, string url)
+{
+	if (httpDownload(path, url))
+		return 1;
+	
+	return 0;
 }

@@ -1,6 +1,34 @@
-module api.common;
+module common;
 
 import std.datetime;
+import logging;
+
+struct SearchOptions
+{
+	
+}
+
+struct InfoOptions
+{
+	
+}
+
+struct InstallOptions
+{
+	
+}
+
+struct CommandOptions
+{
+	debug LogLevel loglevel = LogLevel.debug_;
+	else  LogLevel loglevel = LogLevel.info;
+	public union
+	{
+		SearchOptions search;
+		InfoOptions info;
+		InstallOptions install;
+	}
+}
 
 /// 
 // Basically, .NET data types
@@ -96,9 +124,13 @@ struct Package
 	DateTime updated;
 	/// Author names
 	string[] authors;
+	/// Typically within src attribute
+	string packageUrl;
+	/// Typically type="application/zip" (nupkg)
+	string packageMime;
 	
 	/// Represents <m:properties>
-	struct Properties
+	struct PackageProperties
 	{
 		string version_;
 		string title;
@@ -117,5 +149,5 @@ struct Package
 		long packageSize;
 		string projectUrl;
 	}
-	Properties properties;
+	PackageProperties properties;
 }

@@ -35,3 +35,35 @@ int httpGet(ref string xml, string url, bool checkxml = true)
 		return 2;
 	}
 }
+
+int httpDownload(string path, string url)
+{
+	import std.stdio;
+	import eventcore.driver : IOMode;
+	import vibe.inet.urltransfer : download;
+	import vibe.stream.operations : readAll;
+	try
+	{
+		download(url, (scope res)
+		{
+			try
+			{
+				File f = File(path, "wb");
+				f.rawWrite(res.readAll());
+			}
+			catch (Exception ex)
+			{
+				debug logError("download-sub: %s", ex);
+				else  logError("download-sub: %s", ex.msg);
+			}
+		});
+		
+		return 0;
+	}
+	catch (Exception ex)
+	{
+		debug logError("download: %s", ex);
+		else  logError("download: %s", ex.msg);
+		return 1;
+	}
+}

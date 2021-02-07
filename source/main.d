@@ -2,9 +2,7 @@ module main;
 
 import std.stdio, std.getopt;
 import core.stdc.stdlib : exit;
-import platform;
-import logging;
-import commands;
+import platform, logging, commands, common;
 
 // https://docs.chocolatey.org/en-us/choco/commands/
 //TODO: command: agent -- run as agent
@@ -43,17 +41,16 @@ int main(string[] args)
 		return 1;
 	}
 	
-	string command = args[1];
+	CommandOptions opts;	/// global and command options
+	string command = args[1];	/// command string e.g. "info"
+	GetoptResult r = void;	/// getopt result
 	
-	// General options
-	bool placeholder = void;
-	GetoptResult r = void;
 	try
 	{
 		r = args.getopt(
 			config.caseSensitive,
 			config.passThrough,
-			"placeholder", "does nothing", &placeholder,
+			"loglevel", "Set stdout loglevel", &opts.loglevel,
 		);
 	}
 	catch (Exception ex)
@@ -62,7 +59,10 @@ int main(string[] args)
 		return 1;
 	}
 	
+	setLogLevel(opts.loglevel);
+	
 	bool helpWanted = r.helpWanted; // let getopt recompile opts for command
+	bool placeholder = void;
 	switch (command)
 	{
 	case "search":
@@ -92,7 +92,7 @@ int main(string[] args)
 			logError("Missing search argument");
 			return 1;
 		}
-		return search(args[2]);
+		return search(args[2], opts);
 	case "info":
 		try
 		{
@@ -120,7 +120,35 @@ int main(string[] args)
 			logError("Missing search argument");
 			return 1;
 		}
-		return info(args[2]);
+		return info(args[2], opts);
+	case "install":
+		try
+		{
+			r = args.getopt(
+				config.caseSensitive,
+				config.noPassThrough,
+				"placeholder", "does nothing", &placeholder
+			);
+		}
+		catch (Exception ex)
+		{
+			logError(ex.msg);
+			return 1;
+		}
+		
+		if (helpWanted)
+		{
+			writeln("Install options:");
+			printOptions(r.options);
+			return 0;
+		}
+		
+		if (args.length < 3) // chod install xxx
+		{
+			logError("Missing search argument");
+			return 1;
+		}
+		return install(args[2], opts);
 	case "version", "--version":
 		enum S = "chod "~CHOD_VERSION~" (built: "~__TIMESTAMP__~")";
 		writeln(S);

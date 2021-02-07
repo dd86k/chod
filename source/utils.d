@@ -4,20 +4,21 @@ public import std.datetime;
 import std.conv, std.exception, std.string;
 import std.utf : byCodeUnit;
 import std.algorithm.searching : countUntil;
+import logging;
 
+// NOTE: TimeOfDay.fromISOString includes trailing 'Z' and trips
+//       So it's parsed manually here, without supporting milliseconds
 bool tryParse(ref DateTime dt, string s)
 {
-	// 2020-01-01T20:00:00Z
-	if (s.length < 18)
+	// "2020-01-01T20:00:00Z".length == 20
+	if (s.length < 19)
 		return false;
 	
 	try
 	{
-		// NOTE: TimeOfDay.fromISOString counts the Z and trips
-		//dt = DateTime.fromISOExtString(s);
 		int year = to!int(s[0..4]);
 		int month = to!int(s[5..7]);
-		int day = to!int(s[8..9]);
+		int day = to!int(s[8..10]);
 		Date date = Date(year, month, day);
 		
 		int hour = to!int(s[11..13]);
