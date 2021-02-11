@@ -20,8 +20,7 @@ struct InstallOptions
 
 struct CommandOptions
 {
-	debug LogLevel loglevel = LogLevel.debug_;
-	else  LogLevel loglevel = LogLevel.info;
+	LogLevel loglevel = LogLevel.info;
 	public union
 	{
 		SearchOptions search;
