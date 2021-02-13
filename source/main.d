@@ -1,8 +1,9 @@
 module main;
 
-import std.stdio, std.getopt;
+import std.stdio, std.getopt, std.file;
+import std.path : dirSeparator;
 import core.stdc.stdlib : exit;
-import platform, logging, commands, common;
+import platform, logging, commands, meta;
 
 // https://docs.chocolatey.org/en-us/choco/commands/
 //TODO: command: agent -- run as agent
@@ -59,7 +60,101 @@ int main(string[] args)
 		return 1;
 	}
 	
-	setLogLevel(opts.loglevel);
+	// loglevel
+	if (opts.loglevel != LogLevel.info)
+		setLogLevel(opts.loglevel);
+	
+	// loglevel
+	if (opts.tempPath)
+	{
+		try
+		{
+			if (isDir(opts.tempPath) == false)
+			{
+				logError("main: temporary path '%s' is not a directory",
+					opts.tempPath);
+				return 1;
+			}
+		
+			if (opts.tempPath[$-1] != dirSeparator[0])
+				opts.tempPath ~= dirSeparator;
+		}
+		catch (Exception ex)
+		{
+			debug logError("main: %s", ex);
+			else  logError("main: %s", ex.msg);
+			return 1;
+		}
+	}
+	else // no temporary path
+	{
+		opts.tempPath = tempDir ~ "chod";
+		
+		try
+		{
+			if (exists(opts.tempPath))
+			{
+				if (isDir(opts.tempPath) == false)
+				{
+					logError("main: Can't use temporary path"~
+						", it's not a directory ('%s')", opts.tempPath);
+					return 1;
+				}
+			}
+			else
+			{
+				mkdir(opts.tempPath);
+			}
+		}
+		catch (Exception ex)
+		{
+			debug logError("main: %s", ex);
+			else  logError("main: %s", ex.msg);
+			return 1;
+		}
+		
+		opts.tempPath ~= dirSeparator;
+	}
+	
+	// install path
+	if (opts.installPath)
+	{
+		try
+		{
+			if (isDir(opts.installPath) == false)
+			{
+				logError("main: temporary path '%s' is not a directory",
+					opts.tempPath);
+				return 1;
+			}
+		}
+		catch (Exception ex)
+		{
+			debug logError("main: %s", ex);
+			else  logError("main: %s", ex.msg);
+			return 1;
+		}
+	}
+	else // no install path
+	{
+		import std.process : environment;
+		version (Windows)
+		{
+			string programData = environment.get("ProgramData", `C:\ProgramData`);
+			programData ~= `\chocolatey\bin`;
+			
+			if (exists(programData))
+			{
+				opts.installPath = programData ~ `\`;
+			}
+		}
+		
+		if (opts.installPath == null)
+		{
+			logWarn("Warning: No install path found, installing in current directory");
+			opts.installPath = "." ~ dirSeparator;
+		}
+	}
 	
 	bool helpWanted = r.helpWanted; // let getopt recompile opts for command
 	bool placeholder = void;
@@ -92,6 +187,7 @@ int main(string[] args)
 			logError("Missing search argument");
 			return 1;
 		}
+		
 		return search(args[2], opts);
 	case "info":
 		try
@@ -120,6 +216,7 @@ int main(string[] args)
 			logError("Missing search argument");
 			return 1;
 		}
+		
 		return info(args[2], opts);
 	case "install":
 		try
@@ -127,7 +224,7 @@ int main(string[] args)
 			r = args.getopt(
 				config.caseSensitive,
 				config.noPassThrough,
-				"placeholder", "does nothing", &placeholder
+				"D|download", "Only download package to current directory", &opts.downloadOnly
 			);
 		}
 		catch (Exception ex)
@@ -148,6 +245,7 @@ int main(string[] args)
 			logError("Missing search argument");
 			return 1;
 		}
+		
 		return install(args[2], opts);
 	case "version", "--version":
 		enum S = "chod "~CHOD_VERSION~" (built: "~__TIMESTAMP__~")";

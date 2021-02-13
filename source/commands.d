@@ -1,8 +1,8 @@
 module commands;
 
 import std.stdio;
-import common, api.v2.client;
-import pkg.verifier;
+import meta, api.v2.client;
+import pkg.verifier, pkg.installer;
 import logging;
 
 private enum KEY_OFFICIAL   = "79d02ea9cad655eb";
@@ -149,24 +149,35 @@ int install(string pkgname, ref CommandOptions opts)
 	}
 	
 	string title  = pkg.title~"."~pkg.properties.version_;
-	string target = title~".nupkg";
+	string packageName = title~".nupkg";
 	
-	logInfo("URL: %s", pkg.packageUrl);
+	logInfo("GET '%s'", pkg.packageUrl);
 	
-	if (apiDownload(target, pkg.packageUrl))
+	string archivePath = opts.downloadOnly ?
+		packageName : // cwd
+		opts.tempPath ~ packageName;
+	
+	if (apiDownload(archivePath, pkg.packageUrl))
 		return 1;
 	
-	logInfo("Saved as '%s', checking hash (%s)", target, pkg.properties.hashAlgo);
+	logInfo("File '%s' saved, checking '%s' hash...", packageName, pkg.properties.hashAlgo);
 	
-	if (verifyHash(target, pkg.properties.hashAlgo, pkg.properties.hash))
+	if (verifyHash(archivePath, pkg.properties.hashAlgo, pkg.properties.hash))
+		return 1;
+	
+	if (opts.downloadOnly)
 	{
-		logError("Package hash mismatch");
-		return 1;
+		logInfo("Package hash verified");
+		return 0;
 	}
 	
-	logInfo("Hash matches, extracting...");
+	logInfo("Package hash verified, extracting...");
 	
-	//TODO: package install
+	with (opts)
+	if (archiveUnpack(installPath, tempPath, archivePath))
+		return 1;
+	
+	logInfo("Package installed in '%s'", opts.installPath);
 	
 	return 0;
 }

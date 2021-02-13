@@ -57,5 +57,12 @@ int verifyHash(ref File file, string type, string pkgHash)
 	if (hashFile(fileHash, file, type))
 		return 1;
 	
-	return pkgHash != fileHash;
+	bool mismatch = pkgHash != fileHash;
+	
+	if (mismatch)
+	{
+		logError("hash: Hash mismatch");
+	}
+	
+	return mismatch;
 }

@@ -1,32 +1,14 @@
-module common;
+module meta;
 
 import std.datetime;
 import logging;
 
-struct SearchOptions
-{
-	
-}
-
-struct InfoOptions
-{
-	
-}
-
-struct InstallOptions
-{
-	
-}
-
 struct CommandOptions
 {
 	LogLevel loglevel = LogLevel.info;
-	public union
-	{
-		SearchOptions search;
-		InfoOptions info;
-		InstallOptions install;
-	}
+	string tempPath;
+	string installPath;
+	bool downloadOnly;
 }
 
 /// 

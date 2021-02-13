@@ -2,7 +2,7 @@ module api.internal.dxml;
 
 import std.stdio;
 import utils, logging;
-import common;
+import meta;
 import dxml.dom;
 
 private

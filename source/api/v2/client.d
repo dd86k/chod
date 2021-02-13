@@ -1,7 +1,7 @@
 module api.v2.client;
 
 import std.string, std.format, std.typetuple;
-import common;
+import meta;
 import api.internal.dxml;
 import api.internal.vibed;
 
