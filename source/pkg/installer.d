@@ -39,7 +39,7 @@ int archiveUnpack(string installDir, string tmpDir, string sourceFile)
 			return 1;
 		}
 		
-		foreach (DirEntry entry; dirEntries("tools", "*.exe", SpanMode.shallow))
+		foreach (DirEntry entry; dirEntries("tools", "{*.exe|*.dll}", SpanMode.shallow))
 		{
 			string name = entry.name;
 			copy(name, inpath ~ name.baseName, PreserveAttributes.yes);
