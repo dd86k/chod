@@ -52,6 +52,8 @@ int main(string[] args)
 			config.caseSensitive,
 			config.passThrough,
 			"loglevel", "Set stdout loglevel", &opts.loglevel,
+			"T|temppath", "Set temporary path", &opts.tempPath,
+			"P|installpath", "Set installation path", &opts.installPath,
 		);
 	}
 	catch (Exception ex)
@@ -64,7 +66,7 @@ int main(string[] args)
 	if (opts.loglevel != LogLevel.info)
 		setLogLevel(opts.loglevel);
 	
-	// loglevel
+	// temppath
 	if (opts.tempPath)
 	{
 		try
@@ -86,9 +88,12 @@ int main(string[] args)
 			return 1;
 		}
 	}
-	else // no temporary path
+	else // no temporary path given
 	{
-		opts.tempPath = tempDir ~ "chod";
+		version (Windows) // blame GetTempPathA
+			opts.tempPath = tempDir ~ "chod";
+		else
+			opts.tempPath = tempDir ~ dirSeparator ~ "chod";
 		
 		try
 		{
@@ -96,8 +101,8 @@ int main(string[] args)
 			{
 				if (isDir(opts.tempPath) == false)
 				{
-					logError("main: Can't use temporary path"~
-						", it's not a directory ('%s')", opts.tempPath);
+					logError("main: '%s' is not a usable directory",
+						opts.tempPath);
 					return 1;
 				}
 			}
