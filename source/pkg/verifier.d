@@ -2,11 +2,15 @@ module pkg.verifier;
 
 import std.stdio, std.digest.sha;
 import logging;
-	
+
+private enum BUFFER_SIZE = 64 * 1024;
+
 private union Hashes
 {
 	SHA512 sha512;
 }
+
+private immutable string H_SHA512 = "SHA512"; // SHA-2-512
 
 private int hashFile(ref string hash, ref File file, string type)
 {
@@ -16,8 +20,8 @@ private int hashFile(ref string hash, ref File file, string type)
 	
 	switch (type)
 	{
-	case "SHA512": // SHA-2-512
-		foreach (ubyte[] chunk; file.byChunk(1024 * 64))
+	case H_SHA512:
+		foreach (ubyte[] chunk; file.byChunk(BUFFER_SIZE))
 		{
 			h.sha512.put(chunk);
 		}
@@ -27,8 +31,6 @@ private int hashFile(ref string hash, ref File file, string type)
 		logError("hash: Unknown type '%s'", type);
 		return 1;
 	}
-	
-	
 	
 	return 0;
 }

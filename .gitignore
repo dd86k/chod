@@ -1,3 +1,4 @@
+# DUB files
 .dub
 docs.json
 __dummy.html
@@ -13,8 +14,12 @@ chod-test-*
 *.o
 *.obj
 *.lst
-
 *.dll
 dub.selections.json
 
+# Chocolatey related
+*.nupkg
+*.zip
+
+# Personal stuff
 perso/

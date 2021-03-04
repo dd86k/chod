@@ -113,6 +113,16 @@ int info(string pkgname, ref CommandOptions opts)
 int install(string pkgname, ref CommandOptions opts)
 {
 	Package[] pkgs;
+	Package pkg = void;
+	string title = void;
+	string packageName = void;
+	string archivePath = void;
+	
+	if (opts.installFile)
+	{
+		logInfo("Extracting package...");
+		goto L_INSTALL;
+	}
 	
 	logInfo("Fetching information...");
 	
@@ -125,7 +135,7 @@ int install(string pkgname, ref CommandOptions opts)
 		return 1;
 	}
 	
-	Package pkg = pkgs[0];
+	pkg = pkgs[0];
 	
 	if (pkg.packageUrl == null)
 	{
@@ -148,12 +158,12 @@ int install(string pkgname, ref CommandOptions opts)
 		return 1;
 	}
 	
-	string title  = pkg.title~"."~pkg.properties.version_;
-	string packageName = title~".nupkg";
+	title  = pkg.title~"."~pkg.properties.version_;
+	packageName = title~".nupkg";
 	
 	logInfo("GET '%s'", pkg.packageUrl);
 	
-	string archivePath = opts.downloadOnly ?
+	archivePath = opts.downloadOnly ?
 		packageName : // cwd
 		opts.tempPath ~ packageName;
 	
@@ -173,11 +183,14 @@ int install(string pkgname, ref CommandOptions opts)
 	
 	logInfo("Package hash verified, extracting...");
 	
+L_INSTALL:
 	with (opts)
 	if (archiveUnpack(installPath, tempPath, archivePath))
 		return 1;
 	
-	logInfo("Package installed in '%s'", opts.installPath);
+	//TODO: Install package
+	
+	logInfo("Package installed in '%s'", archivePath);
 	
 	return 0;
 }

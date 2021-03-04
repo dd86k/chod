@@ -5,9 +5,15 @@ import logging;
 
 struct CommandOptions
 {
+	/// Logging level.
 	LogLevel loglevel = LogLevel.info;
+	/// Temporary path to extract stuff to.
 	string tempPath;
+	/// Path to install the binaries.
 	string installPath;
+	/// If set, the package name is the package file path to install.
+	bool installFile;
+	/// If set, only download the package to the current directory.
 	bool downloadOnly;
 }
 
